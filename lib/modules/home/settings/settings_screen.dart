@@ -1,11 +1,11 @@
-import 'dart:io';
+// ignore_for_file: must_be_immutable
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shop_app/layout/home_layout/home_cubit.dart';
 import 'package:shop_app/layout/home_layout/home_states.dart';
-import 'package:shop_app/main.dart';
+import 'package:shop_app/main/main.dart';
 import 'package:shop_app/models/user/user_response.dart';
 import 'package:shop_app/shared/components/components.dart';
 import 'package:shop_app/shared/styles/colors.dart';
@@ -22,18 +22,22 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<HomeCubit, HomeStates>(
       listener: (context, state) {
-        if(state is UserLogoutSuccessHomeState){
-          if(state.isTokenRemoved! && state.userLogoutResponse!.status!){
+        if (state is UserLogoutSuccessHomeState) {
+          if (state.isTokenRemoved! && state.userLogoutResponse!.status!) {
             navigateToAndFinish(context, const MainApp());
-            showToast(message: state.userLogoutResponse!.message!, toastStates: ToastStates.SUCCESS, longTime: false);
-          }else{
-            showToast(message: state.userLogoutResponse!.message!, toastStates: ToastStates.ERROR, longTime: true);
+            showToast(message: state.userLogoutResponse!.message!,
+                toastStates: ToastStates.SUCCESS,
+                longTime: false);
+          } else {
+            showToast(message: state.userLogoutResponse!.message!,
+                toastStates: ToastStates.ERROR,
+                longTime: true);
           }
         }
       },
       builder: (context, state) {
         HomeCubit homeCubit = HomeCubit.get(context);
-        if(homeCubit.userResponse != null){
+        if (homeCubit.userResponse != null) {
           User user = homeCubit.userResponse!.user!;
           usernameController.text = user.name;
           emailController.text = user.email;
@@ -41,7 +45,8 @@ class SettingsScreen extends StatelessWidget {
         }
         return homeCubit.userResponse != null ? SingleChildScrollView(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 20.0, vertical: 20.0),
             child: IgnorePointer(
               ignoring: state is UserLogoutLoadingHomeState,
               child: Form(
@@ -55,6 +60,7 @@ class SettingsScreen extends StatelessWidget {
                           if (value!.isEmpty) {
                             return 'Username should not be empty!';
                           }
+                          return null;
                         },
                         label: 'Username',
                         prefix: Icons.person),
@@ -68,6 +74,7 @@ class SettingsScreen extends StatelessWidget {
                           if (value!.isEmpty) {
                             return 'Email should not be empty!';
                           }
+                          return null;
                         },
                         label: 'Email',
                         prefix: Icons.email),
@@ -81,12 +88,13 @@ class SettingsScreen extends StatelessWidget {
                           if (value!.isEmpty) {
                             return 'Phone should not be empty!';
                           }
+                          return null;
                         },
                         label: 'Phone',
                         prefix: Icons.phone),
                     const SizedBox(height: 20.0,),
                     defaultButton(
-                        onPressed: (){
+                        onPressed: () {
                           homeCubit.userLogout(context);
                         },
                         label: 'Logout',
@@ -96,9 +104,27 @@ class SettingsScreen extends StatelessWidget {
                     defaultButton(
                         onPressed: () {
                           updateProfile(context);
-                          },
+                        },
                         label: 'Update',
                         isButtonLoading: state is UpdateUserProfileLoadingHomeState
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          "Dark Mode",
+                          style: TextStyle(
+                              color: homeCubit.isDark ? Colors.white : Colors
+                                  .black, fontSize: 20.0),
+                        ),
+                        const Spacer(),
+                        CupertinoSwitch(
+                          activeColor: primaryColor,
+                          value: homeCubit.isDark,
+                          onChanged: (value) {
+                            homeCubit.changeAppMode(isDarkShared: value);
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -112,8 +138,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void updateProfile(context){
-    if(formKey.currentState!.validate()){
+  void updateProfile(context) {
+    if (formKey.currentState!.validate()) {
       HomeCubit.get(context).updateUserProfile(
         name: usernameController.text,
         email: emailController.text,

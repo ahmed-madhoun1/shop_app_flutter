@@ -1,6 +1,10 @@
+// ignore_for_file: constant_identifier_names
+
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shop_app/shared/styles/colors.dart';
+import 'package:shop_app/layout/home_layout/home_states.dart';
 
 /// Custom Field
 TextFormField defaultFormField({
@@ -15,7 +19,8 @@ TextFormField defaultFormField({
   IconData? suffix,
   Function()? suffixPressed,
   Function()? onTap,
-  bool autoFocus = false
+  bool autoFocus = false,
+  double textSize = 16.0,
 }) =>
     TextFormField(
       autofocus: autoFocus,
@@ -43,6 +48,7 @@ TextFormField defaultFormField({
             borderSide: BorderSide(color: Colors.grey)),
       ),
       onTap: onTap,
+      style: TextStyle(fontSize: textSize),
     );
 
 /// Custom Button
@@ -62,10 +68,10 @@ Widget defaultButton({
         ),
           const SizedBox(width: 20.0,),
           if(isButtonLoading)
-          Container(
+          const SizedBox(
               width: 20.0,
               height: 20.0,
-              child: const CircularProgressIndicator(color: Colors.white,strokeWidth: 2.0,)
+              child: CircularProgressIndicator(color: Colors.white,strokeWidth: 2.0,)
           ),
         ],
       ),
@@ -87,6 +93,10 @@ Widget defaultTextButton(
           style: const TextStyle(color: Colors.blue),
         ));
 
+/// Custom Text Button
+Widget defaultIconButton({required Function() onPressed,required IconData icon,}) =>
+    IconButton(onPressed: onPressed, icon: Icon(icon, size: 20,),);
+
 void navigateTo(BuildContext context, Widget widget) =>
     Navigator.push(context, MaterialPageRoute(builder: (context) => widget));
 
@@ -101,7 +111,7 @@ Widget splashScreen() => Container(
     color: Colors.white,
     width: double.infinity,
     height: double.infinity,
-    child: Image.asset("assets/images/app_icon.png"));
+    child: const Icon(Icons.home));
 
 SnackBar internetSnackBar = const SnackBar(
   behavior: SnackBarBehavior.floating,
@@ -140,4 +150,19 @@ Color toastColor(ToastStates toastStates) {
       break;
   }
   return color;
+}
+
+void checkFavoriteStatus({required HomeStates state}){
+  if(state is ChangeProductFavoriteSuccessHomeState){
+    if(!state.changeProductFavoriteResponse!.status!){
+      showToast(message: state.changeProductFavoriteResponse!.message.toString(), toastStates: ToastStates.ERROR, longTime: false);
+    }
+  }
+}
+void checkCartStatus({required HomeStates state}){
+  if(state is ChangeProductCartSuccessHomeState){
+    if(!state.changeProductCartResponse!.status!){
+      showToast(message: state.changeProductCartResponse!.message.toString(), toastStates: ToastStates.ERROR, longTime: false);
+    }
+  }
 }

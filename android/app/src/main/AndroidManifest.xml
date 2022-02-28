@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ahmedmadhoun.shopapp.shop_app">
-   <application
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
        android:requestLegacyExternalStorage="true"
         android:label="shop_app"
         android:icon="@mipmap/ic_launcher">

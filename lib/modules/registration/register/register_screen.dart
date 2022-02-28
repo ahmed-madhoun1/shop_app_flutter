@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shop_app/layout/home_layout/home_layout.dart';
@@ -54,120 +55,127 @@ class RegisterScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                  top: 50.0, bottom: 0.0, left: 20.0, right: 20.0),
-              child: IgnorePointer(
-                ignoring: state is LoadingRegisterState,
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Register',
-                        style: Theme.of(context).textTheme.headline4,
-                      ),
-                      const SizedBox(
-                        height: 15.0,
-                      ),
-                      Text(
-                        'Register now to browse our hot offers',
-                        style: Theme.of(context).textTheme.subtitle1,
-                      ),
-                      const SizedBox(
-                        height: 60.0,
-                      ),
-                      defaultFormField(
-                        controller: emailController,
-                        prefix: Icons.email_rounded,
-                        type: TextInputType.emailAddress,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Email address required';
-                          }
-                        },
-                        label: 'Email',
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      defaultFormField(
-                        controller: passwordController,
-                        prefix: Icons.lock,
-                        type: TextInputType.visiblePassword,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Password is too short';
-                          }
-                        },
-                        label: 'Password',
-                        isPassword: RegisterCubit.get(context).isPassword,
-                        suffix: RegisterCubit.get(context).suffix,
-                        suffixPressed: () {
-                          RegisterCubit.get(context).changePasswordVisibility();
-                        },
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      defaultFormField(
-                        controller: nameController,
-                        prefix: Icons.email_rounded,
-                        type: TextInputType.name,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Name required';
-                          }
-                        },
-                        label: 'username',
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      defaultFormField(
-                        controller: phoneController,
-                        prefix: Icons.phone,
-                        type: TextInputType.phone,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Phone required';
-                          }
-                        },
-                        label: 'Phone',
-                      ),
-                      const SizedBox(
-                        height: 30.0,
-                      ),
-                      defaultButton(
-                          onPressed: () {
-                            userRegister(context);
+          return Scaffold(
+            appBar: AppBar(),
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 50.0, bottom: 0.0, left: 20.0, right: 20.0),
+                child: IgnorePointer(
+                  ignoring: state is LoadingRegisterState,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Register',
+                          style: Theme.of(context).textTheme.headline4,
+                        ),
+                        const SizedBox(
+                          height: 15.0,
+                        ),
+                        Text(
+                          'Register now to browse our hot offers',
+                          style: Theme.of(context).textTheme.subtitle1,
+                        ),
+                        const SizedBox(
+                          height: 60.0,
+                        ),
+                        defaultFormField(
+                          controller: emailController,
+                          prefix: Icons.email_rounded,
+                          type: TextInputType.emailAddress,
+                          validate: (value) {
+                            if (value!.isEmpty) {
+                              return 'Email address required';
+                            }
+                            return null;
                           },
-                          label: 'Register',
-                          isButtonLoading: state is LoadingRegisterState
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Do you have an account ?',
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle2
-                                ?.copyWith(fontWeight: FontWeight.w400),
-                          ),
-                          defaultTextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              label: 'Login')
-                        ],
-                      )
-                    ],
+                          label: 'Email',
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        defaultFormField(
+                          controller: passwordController,
+                          prefix: Icons.lock,
+                          type: TextInputType.visiblePassword,
+                          validate: (value) {
+                            if (value!.isEmpty) {
+                              return 'Password is too short';
+                            }
+                            return null;
+                          },
+                          label: 'Password',
+                          isPassword: RegisterCubit.get(context).isPassword,
+                          suffix: RegisterCubit.get(context).suffix,
+                          suffixPressed: () {
+                            RegisterCubit.get(context).changePasswordVisibility();
+                          },
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        defaultFormField(
+                          controller: nameController,
+                          prefix: Icons.email_rounded,
+                          type: TextInputType.name,
+                          validate: (value) {
+                            if (value!.isEmpty) {
+                              return 'Name required';
+                            }
+                            return null;
+                          },
+                          label: 'username',
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        defaultFormField(
+                          controller: phoneController,
+                          prefix: Icons.phone,
+                          type: TextInputType.phone,
+                          validate: (value) {
+                            if (value!.isEmpty) {
+                              return 'Phone required';
+                            }
+                            return null;
+                          },
+                          label: 'Phone',
+                        ),
+                        const SizedBox(
+                          height: 30.0,
+                        ),
+                        defaultButton(
+                            onPressed: () {
+                              userRegister(context);
+                            },
+                            label: 'Register',
+                            isButtonLoading: state is LoadingRegisterState
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Do you have an account ?',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  ?.copyWith(fontWeight: FontWeight.w400),
+                            ),
+                            defaultTextButton(
+                                onPressed: () {
+                                  navigateToAndFinish(context, LoginScreen());
+                                },
+                                label: 'Login')
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),

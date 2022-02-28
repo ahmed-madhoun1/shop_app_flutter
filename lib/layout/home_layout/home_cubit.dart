@@ -1,19 +1,20 @@
-import 'dart:io';
 
-import 'package:bloc/bloc.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shop_app/models/product/cart_products_response.dart';
+import 'package:shop_app/models/product/change_product_cart_response.dart';
 import 'package:shop_app/models/product/change_product_favorite_response.dart';
 import 'package:shop_app/models/product/favorite_products_response.dart';
 import 'package:shop_app/models/product/products_response.dart';
 import 'package:shop_app/models/product/search_products_response.dart';
+import 'package:shop_app/models/product/update_cart_item_quantity_response.dart';
 import 'package:shop_app/models/user/user_logout_response.dart';
 import 'package:shop_app/models/user/user_response.dart';
-import 'package:shop_app/modules/home/categories/categories_screen.dart';
+import 'package:shop_app/modules/home/cart/cart_screen.dart';
 import 'package:shop_app/modules/home/favorites/favorites_screen.dart';
 import 'package:shop_app/modules/home/products/products_screen.dart';
 import 'package:shop_app/modules/home/settings/settings_screen.dart';
+import 'package:shop_app/shared/components/components.dart';
 import 'package:shop_app/shared/components/constanse.dart';
 import 'package:shop_app/shared/network/end_points.dart';
 import 'package:shop_app/shared/network/local/cache_helper.dart';
@@ -27,20 +28,44 @@ class HomeCubit extends Cubit<HomeStates> {
 
   static HomeCubit get(BuildContext context) => BlocProvider.of(context);
 
+  bool isDark = true;
   int currentIndex = 0;
   ProductsResponse? productsResponse;
   CategoriesResponse? categoriesResponse;
   Map<int, bool> userFavoriteProducts = {};
+  Map<int, bool> userCartProducts = {};
+  Map<int, int> userCartItemsQuantity = {};
   ChangeProductFavoriteResponse? changeProductFavoriteResponse;
+  ChangeProductCartResponse? changeProductCartResponse;
   FavoriteProductsResponse? favoriteProductsResponse;
+ late CartProductsResponse? cartProductsResponse;
   UserResponse? userResponse;
   UserLogoutResponse? userLogoutResponse;
   SearchProductsResponse? searchProductsResponse;
+  UpdateCartItemQuantityResponse? updateCartItemQuantityResponse;
+  int quantity = 1;
+  double totalItemsPrice = 0;
+  dynamic totalItems = 0;
+
+  /// Change Application Mode (Light, Dark)
+  void changeAppMode({isDarkShared}) {
+    if(isDarkShared != null){
+      isDark = isDarkShared;
+      emit(ChangeModeAppState());
+      debugPrint("changeAppMode isDarkShared => " + isDarkShared.toString());
+    }else{
+      isDark = !isDark;
+      CacheHelper.setData(key: 'isDark', value: isDark).then((value) => {
+        emit(ChangeModeAppState()),
+        debugPrint("changeAppMode isDark => " + isDarkShared.toString()),
+      });
+    }
+  }
 
   List<Widget> homeBottomNavScreens = [
     const ProductsScreen(),
     const FavoritesScreen(),
-    const CategoriesScreen(),
+    const CartScreen(),
     SettingsScreen()
   ];
 
@@ -49,7 +74,7 @@ class HomeCubit extends Cubit<HomeStates> {
     BottomNavigationBarItem(
         icon: Icon(Icons.favorite_rounded), label: 'Favorite'),
     BottomNavigationBarItem(
-        icon: Icon(Icons.apps_rounded), label: 'Categories'),
+        icon: Icon(Icons.card_giftcard_rounded), label: 'Cart'),
     BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
   ];
 
@@ -62,16 +87,15 @@ class HomeCubit extends Cubit<HomeStates> {
     emit(LoadingHomeState());
     DioHelper.getData(url: HOME, token: userToken)
         .then((value) => {
-              productsResponse = ProductsResponse.fromJson(value.data),
-              for (var product in productsResponse!.data!.products)
-                {
-                  userFavoriteProducts
-                      .addAll({product.id: product.inFavorites}),
-                },
-              emit(GetProductsSuccessHomeState(productsResponse)),
-              debugPrint(
-                  'HomeCubit (getProducts) => ${productsResponse?.data?.products[0].name.toString()}')
-            })
+          productsResponse = ProductsResponse.fromJson(value.data),
+          for (var product in productsResponse!.data!.products)
+            {
+              userFavoriteProducts.addAll({product.id: product.inFavorites}),
+              userCartProducts.addAll({product.id: product.inCart}),
+            },
+          emit(GetProductsSuccessHomeState(productsResponse)),
+          debugPrint('HomeCubit (getProducts) => ${productsResponse?.data?.products[0].name.toString()}')
+        })
         .catchError((error) {
       emit(GetProductsErrorHomeState(error.toString()));
       debugPrint('HomeCubit (getProducts) => ${error.toString()}');
@@ -110,6 +134,24 @@ class HomeCubit extends Cubit<HomeStates> {
     });
   }
 
+  void getUserCartProducts() {
+    emit(GetCartProductsLoadingHomeState());
+    DioHelper.getData(
+      url: CART, token: userToken,
+    ).then((value) => {
+      cartProductsResponse = CartProductsResponse.fromJson(value.data),
+      for (var cartItem in cartProductsResponse!.cartProductsData.cartItems!){
+        userCartItemsQuantity.addAll({cartItem.id: cartItem.quantity}),
+      },
+      calculateCartItems(cartProductsResponse!.cartProductsData.cartItems),
+      emit(GetCartProductsSuccessHomeState(cartProductsResponse)),
+      debugPrint('HomeCubit (getUserCartProducts) => ${cartProductsResponse?.cartProductsData.cartItems![0].cartProduct.name.toString()}')
+    }).catchError((error) {
+      emit(GetCartProductsErrorHomeState(error.toString()));
+      debugPrint('HomeCubit (getUserCartProducts) => ${error.toString()}');
+    });
+  }
+
   void changeFavoriteProduct(int productId) {
     userFavoriteProducts[productId] = !userFavoriteProducts[productId]!;
     emit(ChangeProductFavoriteHomeState());
@@ -140,6 +182,36 @@ class HomeCubit extends Cubit<HomeStates> {
         .catchError((error) {
       userFavoriteProducts[productId] = !userFavoriteProducts[productId]!;
       emit(ChangeProductFavoriteErrorHomeState(error.toString()));
+    });
+  }
+
+  void changeCartProduct(product) {
+    int savedQuantity = quantity;
+    userCartProducts[product.id] = !userCartProducts[product.id]!;
+    emit(ChangeProductCartHomeState());
+    DioHelper.postData(
+      url: CART,
+      data: {'product_id': product.id},
+      token: userToken,
+    ).then((value) => {
+      changeProductCartResponse = ChangeProductCartResponse.fromJson(value.data),
+      if (!changeProductCartResponse!.status!){
+        userCartProducts[product.id] = !userCartProducts[product.id]!,
+        debugPrint('HomeCubit (changeCartProduct) => ${changeProductCartResponse!.message.toString()}'),
+      } else {
+        if(userCartProducts[product.id]!){
+          userCartItemsQuantity.addAll({changeProductCartResponse!.cartItem.id : savedQuantity}),
+          updateCartItemQuantity(cartItemId: changeProductCartResponse!.cartItem.id, quantity: savedQuantity),
+          getUserCartProducts(),
+        }else{
+          getUserCartProducts(),
+        },
+      },
+      debugPrint('HomeCubit (changeCartProduct) => ${changeProductCartResponse!.message.toString()}'),
+      emit(ChangeProductCartSuccessHomeState(changeProductCartResponse)),
+    }).catchError((error) {
+      userCartProducts[product.id] = !userCartProducts[product.id]!;
+      emit(ChangeProductCartErrorHomeState(error.toString()));
     });
   }
 
@@ -268,5 +340,55 @@ class HomeCubit extends Cubit<HomeStates> {
       emit(GetSearchProductsErrorHomeState(error.toString()));
       debugPrint('HomeCubit (getSearchProducts catchError) => ${error.toString()}');
     });
+  }
+
+  Future<void> updateCartItemQuantity({required int cartItemId, required int quantity}) async {
+    emit(UpdateCartItemQuantityLoadingHomeState());
+    int oldQuantity = userCartItemsQuantity[cartItemId]!;
+    userCartItemsQuantity.update(cartItemId, (value) => quantity);
+    DioHelper.putData(
+        url: UPDATE_CART_ITEM_QUANTITY + cartItemId.toString(),
+        data: {"quantity": quantity},
+        token: userToken,
+    ).then((value) => {
+      updateCartItemQuantityResponse = UpdateCartItemQuantityResponse.fromJson(value.data),
+      if(!updateCartItemQuantityResponse!.status!){
+        userCartItemsQuantity.update(cartItemId, (value) => oldQuantity),
+        showToast(message: updateCartItemQuantityResponse!.message.toString(), toastStates: ToastStates.ERROR, longTime: true),
+      },
+      emit(UpdateCartItemQuantitySuccessHomeState(updateCartItemQuantityResponse)),
+      debugPrint('HomeCubit (updateCartItemQuantity DioHelper.putData then) => ${updateCartItemQuantityResponse!.data.cart.quantity.toString()}'),
+    }).catchError((error){
+      userCartItemsQuantity.update(cartItemId, (value) => oldQuantity);
+      showToast(message: 'Something went wrong!', toastStates: ToastStates.ERROR, longTime: true);
+      emit(UpdateCartItemQuantityErrorHomeState(error.toString()));
+      debugPrint('HomeCubit (updateCartItemQuantity DioHelper.putData catchError) => ${error.toString()}');
+    });
+  }
+
+  void increaseCartItemQuantity(){
+    quantity++;
+    emit(ChangeCartItemQuantityHomeState());
+  }
+
+  void decreaseCartItemQuantity(){
+    quantity--;
+    emit(ChangeCartItemQuantityHomeState());
+  }
+
+  void resetQuantity(){
+    quantity= 1;
+  }
+
+  void calculateCartItems(List<dynamic>? cartItems){
+    totalItemsPrice = 0;
+    totalItems = 0;
+    if(cartItems != null && cartItems.isNotEmpty){
+      for (var cartItem in cartItems) {
+        totalItemsPrice += cartItem.cartProduct.price * cartItem.quantity;
+        totalItems += cartItem.quantity;
+      }
+    }
+    emit(CalculateCartItemsHomeState());
   }
 }

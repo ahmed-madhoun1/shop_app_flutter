@@ -1,7 +1,7 @@
 
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:shop_app/models/boarding_item/boarding_item.dart';
 import 'package:shop_app/shared/components/components.dart';
 import 'package:shop_app/shared/network/local/cache_helper.dart';

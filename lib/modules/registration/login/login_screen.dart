@@ -1,8 +1,9 @@
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shop_app/layout/home_layout/home_layout.dart';
+import 'package:shop_app/modules/registration/forget_password/forget_password_screen.dart';
 import 'package:shop_app/modules/registration/register/register_screen.dart';
 import 'package:shop_app/shared/components/components.dart';
 import 'package:shop_app/shared/components/constanse.dart';
@@ -53,94 +54,107 @@ class LoginScreen extends StatelessWidget {
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                  top: 50.0, bottom: 0.0, left: 20.0, right: 20.0),
-              child: IgnorePointer(
-                ignoring: state is LoadingLoginState,
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Login',
-                        style: Theme.of(context).textTheme.headline4,
-                      ),
-                      const SizedBox(
-                        height: 15.0,
-                      ),
-                      Text(
-                        'login now to browse our hot offers',
-                        style: Theme.of(context).textTheme.subtitle1,
-                      ),
-                      const SizedBox(
-                        height: 100.0,
-                      ),
-                      defaultFormField(
-                        controller: emailController,
-                        prefix: Icons.email_rounded,
-                        type: TextInputType.emailAddress,
-                        validate: (value) {
-                          if (value!.isEmpty) {
-                            return 'Email address required';
-                          }
-                        },
-                        label: 'Email',
-                      ),
-                      const SizedBox(
-                        height: 20.0,
-                      ),
-                      defaultFormField(
-                          controller: passwordController,
-                          prefix: Icons.lock,
-                          type: TextInputType.visiblePassword,
+          return Scaffold(
+            appBar: AppBar(),
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 50.0, bottom: 0.0, left: 20.0, right: 20.0),
+                child: IgnorePointer(
+                  ignoring: state is LoadingLoginState,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Login',
+                          style: Theme.of(context).textTheme.headline4,
+                        ),
+                        const SizedBox(
+                          height: 15.0,
+                        ),
+                        Text(
+                          'login now to browse our hot offers',
+                          style: Theme.of(context).textTheme.subtitle1,
+                        ),
+                        const SizedBox(
+                          height: 100.0,
+                        ),
+                        defaultFormField(
+                          controller: emailController,
+                          prefix: Icons.email_rounded,
+                          type: TextInputType.emailAddress,
                           validate: (value) {
                             if (value!.isEmpty) {
-                              return 'Password is too short';
+                              return 'Email address required';
                             }
+                            return null;
                           },
-                          label: 'Password',
-                          isPassword: LoginCubit.get(context).isPassword,
-                          suffix: LoginCubit.get(context).suffix,
-                          suffixPressed: () {
-                            LoginCubit.get(context).changePasswordVisibility();
-                          },
-                          onSubmit: (value) {
-                            userLogin(context);
-                          }),
-                      const SizedBox(
-                        height: 40.0,
-                      ),
-                      defaultButton(
-                          onPressed: () {
-                            userLogin(context);
-                          },
-                          label: 'Login',
-                          isButtonLoading: state is LoadingLoginState
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Don\'t have an account ?',
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle2
-                                ?.copyWith(fontWeight: FontWeight.w400),
-                          ),
-                          defaultTextButton(
-                              onPressed: () {
-                                Navigator.of(context).pushReplacementNamed("register_screen");
-                              },
-                              label: 'Register')
-                        ],
-                      )
-                    ],
+                          label: 'Email',
+                        ),
+                        const SizedBox(
+                          height: 20.0,
+                        ),
+                        defaultFormField(
+                            controller: passwordController,
+                            prefix: Icons.lock,
+                            type: TextInputType.visiblePassword,
+                            validate: (value) {
+                              if (value!.isEmpty) {
+                                return 'Password is too short';
+                              }
+                              return null;
+                            },
+                            label: 'Password',
+                            isPassword: LoginCubit.get(context).isPassword,
+                            suffix: LoginCubit.get(context).suffix,
+                            suffixPressed: () {
+                              LoginCubit.get(context).changePasswordVisibility();
+                            },
+                            onSubmit: (value) {
+                              userLogin(context);
+                            }),
+                        const SizedBox(
+                          height: 5.0,
+                        ),
+                        defaultTextButton(
+                            onPressed: () {
+                              navigateTo(context, ForgetPasswordScreen());
+                            },
+                            label: 'Forget password ?'),
+                        const SizedBox(
+                          height: 15.0,
+                        ),
+                        defaultButton(
+                            onPressed: () {
+                              userLogin(context);
+                            },
+                            label: 'Login',
+                            isButtonLoading: state is LoadingLoginState
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Don\'t have an account ?',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  ?.copyWith(fontWeight: FontWeight.w400),
+                            ),
+                            defaultTextButton(
+                                onPressed: () {
+                                  navigateToAndFinish(context, RegisterScreen());
+                                },
+                                label: 'Register')
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

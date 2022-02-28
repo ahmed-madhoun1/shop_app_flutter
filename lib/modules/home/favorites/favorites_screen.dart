@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:shop_app/layout/home_layout/home_cubit.dart';
 import 'package:shop_app/layout/home_layout/home_states.dart';
 import 'package:shop_app/models/product/favorite_products_response.dart';
+import 'package:shop_app/shared/components/components.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
@@ -12,7 +12,10 @@ class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<HomeCubit, HomeStates>(
-        listener: (context, state) {},
+        listener: (context, state) {
+          checkFavoriteStatus(state: state);
+          checkCartStatus(state: state);
+        },
         builder: (context, state) {
           List<FavoriteProductData> favoriteProductsData =
               HomeCubit.get(context).favoriteProductsResponse!.data!.favoriteProductsData!;
@@ -94,8 +97,14 @@ class FavoritesScreen extends StatelessWidget {
                                 color: Colors.red,
                               ),
                         onPressed: () {
-                          HomeCubit.get(context).changeFavoriteProduct(
-                              favoriteProductData.favoriteProduct!.id);
+                          HomeCubit.get(context).changeFavoriteProduct(favoriteProductData.favoriteProduct!.id);
+                        },
+                      ),
+                      IconButton(
+                        highlightColor: Colors.blueGrey,
+                        icon: HomeCubit.get(context).userCartProducts[favoriteProductData.favoriteProduct!.id]! ? const Icon(Icons.shopping_cart_rounded, color: Colors.red,) : const Icon(Icons.add_shopping_cart_rounded, color: Colors.red,),
+                        onPressed: () {
+                          HomeCubit.get(context).changeCartProduct(favoriteProductData.favoriteProduct!.id);
                         },
                       ),
                     ],

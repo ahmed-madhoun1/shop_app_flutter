@@ -50,8 +50,7 @@ dependencies:
   smooth_page_indicator: ^1.0.0+2
   fluttertoast: ^8.0.8
   carousel_slider: ^4.0.0
-  image_picker: ^0.8.4+6
-
+  timer_button: ^2.0.0
 
 dev_dependencies:
   flutter_test:
